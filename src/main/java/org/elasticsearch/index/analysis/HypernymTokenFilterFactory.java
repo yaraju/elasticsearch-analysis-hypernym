@@ -16,6 +16,7 @@ import java.util.Properties;
 /**
  * Created by yar on 5/6/15.
  */
+@AnalysisSettingsRequired
 public class HypernymTokenFilterFactory extends org.elasticsearch.index.analysis.AbstractTokenFilterFactory {
     private final HypernymFilterFactory filterFactoryDelegate;
     private Properties properties;
@@ -23,9 +24,10 @@ public class HypernymTokenFilterFactory extends org.elasticsearch.index.analysis
     @Inject
     public HypernymTokenFilterFactory(Index index, @IndexSettings Settings indexSettings, @Assisted String name, @Assisted Settings settings) {
         super(index, indexSettings, name, settings);
+        properties = new Properties();
         filterFactoryDelegate = new HypernymFilterFactory(new MultimapFileReaderFactory());
         if (settings.get("hypernyms_path") != null) {
-            properties.put(HypernymFilterFactory.FILE_PATH_PARAMETER, indexSettings.get("hypernyms_path"));
+            properties.put(HypernymFilterFactory.FILE_PATH_PARAMETER, settings.get("hypernyms_path"));
         } else {
             throw new ElasticsearchIllegalArgumentException("hypernym requires `hypernyms_path` to be configured");
         }
