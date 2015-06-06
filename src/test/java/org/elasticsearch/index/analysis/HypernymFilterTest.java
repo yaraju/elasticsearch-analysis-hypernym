@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HypernymFilterTest extends BaseTokenStreamTestCase {
+    private HypernymFilter filter;
     private Analyzer analyzer = new Analyzer() {
         @Override
         protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
@@ -21,7 +22,8 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
             hypernymsMap.put("father", Lists.newArrayList("parent"));
             hypernymsMap.put("mother", Lists.newArrayList("parent"));
             hypernymsMap.put("thing", Lists.newArrayList("situation", "state_of_affairs"));
-            return new Analyzer.TokenStreamComponents(source, new HypernymFilter(source, hypernymsMap));
+            filter = new HypernymFilter(source, hypernymsMap);
+            return new Analyzer.TokenStreamComponents(source, filter);
         }
     };
 
@@ -86,12 +88,12 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
         int startOffsets[] = {
                 0, 0,
                 7, 7,
-                14, 14,
+                14, 14, 14,
                 20, 20};
         int endOffsets[] = {
                 6, 6,
                 13, 13,
-                19, 19,
+                19, 19, 19,
                 26, 26};
 
         assertAnalyzesTo(analyzer, "father mother thing mother", output, startOffsets, endOffsets);
