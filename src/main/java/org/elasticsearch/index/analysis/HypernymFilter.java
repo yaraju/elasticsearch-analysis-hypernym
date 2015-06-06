@@ -13,6 +13,7 @@ import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,43 +46,50 @@ public final class HypernymFilter extends TokenFilter {
         super(input);
         this.logger = Loggers.getLogger(getClass());
         this.hypernyms = hypernyms;
+        this.currentHypernyms = new ArrayList<>();
         this.currentHypernymIndex = -1;
-        logger.warn("Current hypernyms: " + hypernyms.keySet());
+        logger.info("Current hypernyms: " + hypernyms.keySet());
     }
 
     @Override
     public boolean incrementToken() throws IOException {
-        if (!input.incrementToken()) {
-            logger.warn("No more tokens found");
-            return false;
+        if( save != null ) {
+            // Keep the previous token's state. We still have hypernyms to inject into the stream
+            restoreState(save);
         }
         if (currentHypernymIndex >= 0 && currentHypernymIndex < currentHypernyms.size()) {
-            logger.warn("More hypernyms for this token...");
+            // We have hypernyms to add to the tokens stream
             char[] currentHypernym = currentHypernyms.get(currentHypernymIndex).toCharArray();
-            termAtt.copyBuffer(currentHypernym, 0, currentHypernym.length);
-            currentHypernymIndex++;
-            // Save original state
             posIncrAtt.setPositionIncrement(0);
-            save = captureState();
+            String str = new String(currentHypernym);
+            termAtt.setEmpty().append(str);
+            logger.info("Found hypernym: " + str);
+            currentHypernymIndex++;
             return true;
         } else if (currentHypernymIndex >= 0 && currentHypernymIndex == currentHypernyms.size()) {
-            logger.warn("No more hypernyms for this token.");
+            // We're done adding hypernyms to the tokens stream
             currentHypernymIndex = -1;
             currentHypernyms = null;
-            // Save original state
-            posIncrAtt.setPositionIncrement(1);
-            save = captureState();
-            return true;
+            save = null;
+            clearAttributes();
+        }
+        if (!input.incrementToken()) {
+            // Do we have another token?
+            return false;
         }
         if (termAtt.length() > 0) {
+            // We have another non-empty token
             char [] buffer = termAtt.buffer();
             String term = new String(buffer, 0, termAtt.length());
-            logger.warn("Processing term: " + term);
+            logger.info("Processing term: " + term);
             currentHypernyms = hypernyms.get(term);
             if (currentHypernyms != null) {
-                logger.warn("found matching hypernyms for term: "
+                // This token has hypernyms!
+                logger.info("found matching hypernyms for term: "
                         + term + ": " + currentHypernyms.size());
                 currentHypernymIndex = 0;
+                // Save original state
+                save = captureState();
             }
         }
         return true;
@@ -89,10 +97,6 @@ public final class HypernymFilter extends TokenFilter {
 
     @Override
     public void reset() throws IOException {
-        currentHypernymIndex = -1;
-        if (currentHypernyms != null)
-            currentHypernyms = null;
-
         input.reset();
     }
 
