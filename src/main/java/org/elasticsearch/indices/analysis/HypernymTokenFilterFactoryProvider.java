@@ -1,5 +1,6 @@
 package org.elasticsearch.indices.analysis;
 
+import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.analysis.HypernymTokenFilterFactory;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.Provider;
@@ -17,18 +18,20 @@ public class HypernymTokenFilterFactoryProvider implements Provider<HypernymToke
     private final Settings indexSettings;
     private final String name;
     private final Settings settings;
+    private final Environment env;
 
     @Inject
     public HypernymTokenFilterFactoryProvider(Index index, @IndexSettings Settings indexSettings,
-                                              @Assisted String name, @Assisted Settings settings) {
+                                              Environment env, @Assisted String name, @Assisted Settings settings) {
         this.index = index;
         this.indexSettings = indexSettings;
+        this.env = env;
         this.name = name;
         this.settings = settings;
     }
 
     @Override
     public HypernymTokenFilterFactory get() {
-        return new HypernymTokenFilterFactory(index, indexSettings, name, settings);
+        return new HypernymTokenFilterFactory(index, indexSettings, env, name, settings);
     }
 }
