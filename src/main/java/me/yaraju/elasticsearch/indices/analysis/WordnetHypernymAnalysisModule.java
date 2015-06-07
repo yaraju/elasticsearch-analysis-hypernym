@@ -1,4 +1,4 @@
-package org.elasticsearch.indices.analysis;
+package me.yaraju.elasticsearch.indices.analysis;
 
 import org.elasticsearch.common.inject.AbstractModule;
 

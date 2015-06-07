@@ -1,14 +1,15 @@
-package org.elasticsearch.index.analysis;
+package me.yaraju.elasticsearch.index.analysis;
 
 /**
  * Created by yar on 5/6/15.
  */
 
+import edu.mit.jwi.IDictionary;
+import me.yaraju.wordnet.WordNetUtils;
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.apache.lucene.analysis.tokenattributes.PositionLengthAttribute;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 
@@ -25,7 +26,6 @@ public final class HypernymFilter extends TokenFilter {
     private static ESLogger logger;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
     private final PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
-    private final PositionLengthAttribute posLenAtt = addAttribute(PositionLengthAttribute.class);
 
     private Map<String, List<String>> hypernyms;
 
@@ -33,6 +33,19 @@ public final class HypernymFilter extends TokenFilter {
 
     private List<String> currentHypernyms;
     private State save;
+    private IDictionary wordnetDict;
+
+    private HypernymFilter(TokenStream input) {
+        super(input);
+        this.logger = Loggers.getLogger(getClass());
+        this.currentHypernyms = new ArrayList<>();
+        this.currentHypernymIndex = -1;
+    }
+
+    public HypernymFilter(TokenStream input, IDictionary wordnetDict) {
+        this(input);
+        this.wordnetDict = wordnetDict;
+    }
 
     /**
      * Constructor.
@@ -43,12 +56,11 @@ public final class HypernymFilter extends TokenFilter {
      *          the hypernym map. key: token text, value: list of hypernyms
      */
     public HypernymFilter(TokenStream input, Map<String, List<String>> hypernyms) {
-        super(input);
-        this.logger = Loggers.getLogger(getClass());
+        this(input);
         this.hypernyms = hypernyms;
-        this.currentHypernyms = new ArrayList<>();
-        this.currentHypernymIndex = -1;
-        logger.info("Current hypernyms: " + hypernyms.keySet());
+        if (hypernyms != null) {
+            logger.info("Current hypernyms: " + hypernyms.keySet());
+        }
     }
 
     @Override
@@ -69,7 +81,7 @@ public final class HypernymFilter extends TokenFilter {
         } else if (currentHypernymIndex >= 0 && currentHypernymIndex == currentHypernyms.size()) {
             // We're done adding hypernyms to the tokens stream
             currentHypernymIndex = -1;
-            currentHypernyms = null;
+            currentHypernyms.clear();
             save = null;
             clearAttributes();
         }
@@ -82,8 +94,8 @@ public final class HypernymFilter extends TokenFilter {
             char [] buffer = termAtt.buffer();
             String term = new String(buffer, 0, termAtt.length());
             logger.info("Processing term: " + term);
-            currentHypernyms = hypernyms.get(term);
-            if (currentHypernyms != null) {
+            getHypernyms(term);
+            if (currentHypernyms != null && currentHypernyms.size() > 0) {
                 // This token has hypernyms!
                 logger.info("found matching hypernyms for term: "
                         + term + ": " + currentHypernyms.size());
@@ -93,6 +105,18 @@ public final class HypernymFilter extends TokenFilter {
             }
         }
         return true;
+    }
+
+    private void getHypernyms(String term) {
+        if (hypernyms != null) {
+            if (hypernyms.get(term) != null) {
+                currentHypernyms.addAll(hypernyms.get(term));
+            }
+        } else {
+            if (wordnetDict != null) {
+                currentHypernyms.addAll(WordNetUtils.getHypernyms(wordnetDict, term, "n", false));
+            }
+        }
     }
 
     @Override

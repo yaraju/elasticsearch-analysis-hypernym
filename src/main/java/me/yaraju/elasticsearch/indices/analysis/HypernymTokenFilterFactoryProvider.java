@@ -1,7 +1,7 @@
-package org.elasticsearch.indices.analysis;
+package me.yaraju.elasticsearch.indices.analysis;
 
 import org.elasticsearch.env.Environment;
-import org.elasticsearch.index.analysis.HypernymTokenFilterFactory;
+import me.yaraju.elasticsearch.index.analysis.HypernymTokenFilterFactory;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.Provider;
 import org.elasticsearch.common.inject.assistedinject.Assisted;

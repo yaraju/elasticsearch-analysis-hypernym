@@ -1,5 +1,6 @@
-package org.elasticsearch.index.analysis;
+package me.yaraju.elasticsearch.analysis;
 
+import me.yaraju.elasticsearch.index.analysis.HypernymFilter;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.BaseTokenStreamTestCase;
 import org.apache.lucene.analysis.MockTokenizer;
@@ -21,7 +22,7 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
             Map<String, List<String>> hypernymsMap = new HashMap<>();
             hypernymsMap.put("father", Lists.newArrayList("parent"));
             hypernymsMap.put("mother", Lists.newArrayList("parent"));
-            hypernymsMap.put("thing", Lists.newArrayList("situation", "state_of_affairs"));
+            hypernymsMap.put("thing", Lists.newArrayList("state_of_affairs", "situation"));
             filter = new HypernymFilter(source, hypernymsMap);
             return new Analyzer.TokenStreamComponents(source, filter);
         }
@@ -30,18 +31,22 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
     @Test
     public void testPositionIncrementsSingleTerm() throws Exception {
         String output[] = {"father", "parent"};
-        // the position increment for the first term must be one in this case and of the second must be 0,
-        // because the second term is stored in the same position in the token filter stream
         int posIncrements[] = {1, 0};
 
         assertAnalyzesTo(analyzer, "father", output, posIncrements);
     }
 
     @Test
+    public void testPositionIncrementsNoMatch() throws Exception {
+        String output[] = {"asdasdadasd"};
+        int posIncrements[] = {1};
+
+        assertAnalyzesTo(analyzer, "asdasdadasd", output, posIncrements);
+    }
+
+    @Test
     public void testPositionIncrementsAnotherSingleTerm() throws Exception {
-        String output[] = {"thing", "situation", "state_of_affairs"};
-        // the position increment for the first term must be one in this case and of the second must be 0,
-        // because the second term is stored in the same position in the token filter stream
+        String output[] = {"thing", "state_of_affairs", "situation"};
         int posIncrements[] = {1, 0, 0};
 
         assertAnalyzesTo(analyzer, "thing", output, posIncrements);
@@ -49,9 +54,7 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
 
     public void testPositionIncrementsTwoTerm() throws Exception {
 
-        String output[] = {"father", "parent", "thing", "situation", "state_of_affairs"};
-        // the position increment for the first term must be one in this case and of the second must be 0,
-        // because the second term is stored in the same position in the token filter stream
+        String output[] = {"father", "parent", "thing", "state_of_affairs", "situation"};
         int posIncrements[] = {1, 0, 1, 0, 0};
 
         assertAnalyzesTo(analyzer, "father thing", output, posIncrements);
@@ -62,19 +65,14 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
         String output[] = {
                 "father", "parent",
                 "mother", "parent",
-                "thing", "situation", "state_of_affairs",
+                "thing", "state_of_affairs", "situation",
                 "mother", "parent",};
-        // the position increment for the first term must be one in this case and of the second must be 0,
-        // because the second term is stored in the same position in the token filter stream
         int posIncrements[] = {
                 1, 0,
                 1, 0,
                 1, 0, 0,
                 1, 0};
-        // this is dummy stuff, but the test does not run without it
 
-        // position increments are following the 1-0 pattern, because for each next term we insert a new term into
-        // the same position (i.e. position increment is 0)
         assertAnalyzesTo(analyzer, "father mother thing mother", output, posIncrements);
     }
 
@@ -83,7 +81,7 @@ public class HypernymFilterTest extends BaseTokenStreamTestCase {
         String output[] = {
                 "father", "parent",
                 "mother", "parent",
-                "thing", "situation", "state_of_affairs",
+                "thing", "state_of_affairs", "situation",
                 "mother", "parent",};
         int startOffsets[] = {
                 0, 0,

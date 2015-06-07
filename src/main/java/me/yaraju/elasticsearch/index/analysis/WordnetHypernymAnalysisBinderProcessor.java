@@ -1,4 +1,6 @@
-package org.elasticsearch.index.analysis;
+package me.yaraju.elasticsearch.index.analysis;
+
+import org.elasticsearch.index.analysis.AnalysisModule;
 
 /**
  * Created by yar on 5/6/15.

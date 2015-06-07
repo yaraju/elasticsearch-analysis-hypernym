@@ -1,9 +1,10 @@
-package org.elasticsearch.indices.analysis;
+package me.yaraju.elasticsearch.indices.analysis;
 
 import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.analysis.PreBuiltTokenFilterFactoryFactory;
+import org.elasticsearch.indices.analysis.IndicesAnalysisService;
 
 /**
  * Created by yar on 5/6/15.

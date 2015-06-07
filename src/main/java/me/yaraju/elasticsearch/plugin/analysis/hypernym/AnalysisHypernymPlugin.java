@@ -1,6 +1,6 @@
-package org.elasticsearch.plugin.analysis.hypernym;
+package me.yaraju.elasticsearch.plugin.analysis.hypernym;
 
-import org.elasticsearch.index.analysis.WordnetHypernymAnalysisBinderProcessor;
+import me.yaraju.elasticsearch.index.analysis.WordnetHypernymAnalysisBinderProcessor;
 import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.plugins.AbstractPlugin;
 
