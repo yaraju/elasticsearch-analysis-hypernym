@@ -28,11 +28,6 @@ public abstract class BaseWordnetTokenFilterFactory extends AbstractTokenFilterF
     public BaseWordnetTokenFilterFactory(Index index, Settings indexSettings, Environment env, String name, Settings settings, String wordnetType) {
         super(index, indexSettings, name, settings);
         Reader reader = null;
-        if (settings.get(wordnetType + "_path") != null) {
-            reader = Analysis.getReaderFromFile(env, settings, wordnetType + "_path");
-        } else {
-            throw new ElasticsearchIllegalArgumentException(wordnetType + " requires `" + wordnetType + "_path` to be configured");
-        }
         try {
             String format = settings.get("format");
             if (Strings.isNullOrEmpty(format)) {
@@ -40,6 +35,11 @@ public abstract class BaseWordnetTokenFilterFactory extends AbstractTokenFilterF
                 format = "multimap";
             }
             if (("multimap").equalsIgnoreCase(format)) {
+                if (settings.get(wordnetType + "_path") != null) {
+                    reader = Analysis.getReaderFromFile(env, settings, wordnetType + "_path");
+                } else {
+                    throw new ElasticsearchIllegalArgumentException(wordnetType + " requires `" + wordnetType + "_path` to be configured");
+                }
                 valuesMap = new MultimapFileReader(new BufferedReader(reader)).readMultimap();
             } else if ("wordnet".equalsIgnoreCase(format)) {
                 valuesMap = new HashMap<>();
