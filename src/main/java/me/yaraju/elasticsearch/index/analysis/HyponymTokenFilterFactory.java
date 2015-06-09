@@ -10,23 +10,23 @@ import org.elasticsearch.index.analysis.AnalysisSettingsRequired;
 import org.elasticsearch.index.settings.IndexSettings;
 
 /**
- * Created by yar on 5/6/15.
+ * Created by yar on 8/6/15.
  */
 @AnalysisSettingsRequired
-public class HypernymTokenFilterFactory extends BaseWordnetTokenFilterFactory {
+public class HyponymTokenFilterFactory extends BaseWordnetTokenFilterFactory {
 
     @Inject
-    public HypernymTokenFilterFactory(Index index, @IndexSettings Settings indexSettings, Environment env,
+    public HyponymTokenFilterFactory(Index index, @IndexSettings Settings indexSettings, Environment env,
                                       @Assisted String name, @Assisted Settings settings) {
-        super(index, indexSettings, env, name, settings, "hypernyms");
+        super(index, indexSettings, env, name, settings, "hyponyms");
     }
 
     @Override
     public TokenStream create(TokenStream tokenStream) {
         if (wordnetDict != null) {
-            return new HypernymFilter(tokenStream, wordnetDict);
+            return new HyponymFilter(tokenStream, wordnetDict);
         } else if (valuesMap != null) {
-            return new HypernymFilter(tokenStream, valuesMap);
+            return new HyponymFilter(tokenStream, valuesMap);
         }
         return tokenStream;
     }

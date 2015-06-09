@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     compile 'org.elasticsearch:elasticsearch:1.3.0'
-    compile 'com.github.yaraju:wordnetlib:1.0.0'
+    compile 'com.github.yaraju:wordnetlib:7370fd9'
 
     testCompile 'org.apache.lucene:lucene-test-framework:4.9.0'
     testCompile 'org.apache.lucene:lucene-core:4.9.0'

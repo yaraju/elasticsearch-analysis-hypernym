@@ -1,22 +1,22 @@
 package me.yaraju.elasticsearch.plugin.analysis.hypernym;
 
-import me.yaraju.elasticsearch.index.analysis.WordnetHypernymAnalysisBinderProcessor;
+import me.yaraju.elasticsearch.index.analysis.WordnetAnalysisBinderProcessor;
 import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 /**
  * Created by yar on 5/6/15.
  */
-public class AnalysisHypernymPlugin extends AbstractPlugin {
+public class AnalysisWordnetPlugin extends AbstractPlugin {
 
     @Override
     public String name() {
-        return "hypernym";
+        return "analysis-wordnet";
     }
 
     @Override
     public String description() {
-        return "Wordnet Hypernym token filter support";
+        return "Wordnet extra token filters support";
     }
 
 //    @Override
@@ -30,6 +30,6 @@ public class AnalysisHypernymPlugin extends AbstractPlugin {
      * Automatically called with the analysis module.
      */
     public void onModule(AnalysisModule module) {
-        module.addProcessor(new WordnetHypernymAnalysisBinderProcessor());
+        module.addProcessor(new WordnetAnalysisBinderProcessor());
     }
 }

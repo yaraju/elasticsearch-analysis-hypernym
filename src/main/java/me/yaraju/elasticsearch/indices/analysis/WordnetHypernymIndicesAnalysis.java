@@ -12,10 +12,13 @@ import org.elasticsearch.indices.analysis.IndicesAnalysisService;
 public class WordnetHypernymIndicesAnalysis extends AbstractComponent {
     @Inject
     public WordnetHypernymIndicesAnalysis(Settings settings, IndicesAnalysisService indicesAnalysisService,
-                                          HypernymTokenFilterFactoryProvider hypernymTokenFilterFactoryProvider) {
+                                          HypernymTokenFilterFactoryProvider hypernymTokenFilterFactoryProvider,
+                                          HyponymTokenFilterFactoryProvider hyponymTokenFilterFactoryProvider) {
         super(settings);
 
         indicesAnalysisService.tokenFilterFactories().put("hypernym", new PreBuiltTokenFilterFactoryFactory(
                 hypernymTokenFilterFactoryProvider.get()));
+        indicesAnalysisService.tokenFilterFactories().put("hyponym", new PreBuiltTokenFilterFactoryFactory(
+                hyponymTokenFilterFactoryProvider.get()));
     }
 }
